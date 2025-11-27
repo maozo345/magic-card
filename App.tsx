@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const hasPrevious = currentIndex > 0;
 
   return (
-    <div className="min-h-screen w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a1e] to-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="h-[100dvh] w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a1e] to-black flex flex-col items-center p-4 relative overflow-hidden">
       
       {/* Background Ambient Effects */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0">
@@ -77,9 +77,9 @@ const App: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="z-10 flex flex-col items-center gap-12"
+            className="z-10 flex flex-col items-center justify-evenly h-full w-full py-6 md:py-10"
           >
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-1 flex-shrink-0">
               <motion.h1 
                 className="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-blue-200 to-indigo-400 drop-shadow-[0_0_15px_rgba(165,180,252,0.5)]"
                 animate={{ textShadow: ["0 0 15px rgba(165,180,252,0.5)", "0 0 25px rgba(165,180,252,0.8)", "0 0 15px rgba(165,180,252,0.5)"] }}
@@ -87,10 +87,11 @@ const App: React.FC = () => {
               >
                 המסר הקסום
               </motion.h1>
-              <p className="text-blue-200/60 text-lg font-light tracking-wide">גלה מה היקום רוצה לספר לך היום</p>
+              <p className="text-blue-200/60 text-base md:text-lg font-light tracking-wide">גלה מה היקום רוצה לספר לך היום</p>
             </div>
 
-            <div className="relative group">
+            {/* Card Container with responsive scaling to ensure fit */}
+            <div className="relative group scale-[0.65] xs:scale-75 sm:scale-90 md:scale-100 flex-shrink-0">
                {/* Stack effect behind the card */}
                <div className="absolute top-2 right-2 w-64 h-96 bg-indigo-900/40 rounded-2xl rotate-3 transition-transform group-hover:rotate-6 duration-500"></div>
                <div className="absolute top-1 right-1 w-64 h-96 bg-indigo-800/40 rounded-2xl rotate-1 transition-transform group-hover:rotate-3 duration-500"></div>
@@ -102,11 +103,11 @@ const App: React.FC = () => {
               onClick={handleDrawCard}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="relative px-12 py-4 bg-transparent overflow-hidden rounded-full group"
+              className="relative px-10 py-3 md:px-12 md:py-4 bg-transparent overflow-hidden rounded-full group flex-shrink-0"
             >
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-cyan-500 to-blue-600 opacity-80 group-hover:opacity-100 transition-opacity blur-md"></span>
               <span className="absolute inset-0 w-full h-full border border-white/30 rounded-full"></span>
-              <span className="relative flex items-center gap-2 text-white text-xl font-bold tracking-wider">
+              <span className="relative flex items-center gap-2 text-white text-lg md:text-xl font-bold tracking-wider">
                 <Sparkles size={20} className="animate-spin-slow" />
                 תפתח מסר
               </span>
@@ -118,10 +119,10 @@ const App: React.FC = () => {
         {appState === AppState.SHUFFLING && (
           <motion.div 
             key="shuffling"
-            className="z-10 flex flex-col items-center justify-center h-96 w-full relative"
+            className="z-10 flex flex-col items-center justify-center h-full w-full relative"
           >
              <h2 className="text-2xl text-blue-200 mb-12 animate-pulse font-light">מערבב את הקלפים...</h2>
-             <div className="relative w-64 h-96">
+             <div className="relative w-64 h-96 scale-75 md:scale-100">
                 {[0, 1, 2, 3, 4].map((index) => (
                   <motion.div
                     key={index}
@@ -152,7 +153,7 @@ const App: React.FC = () => {
         {appState === AppState.REVEALED && currentCard && (
           <motion.div 
             key="revealed"
-            className="z-20 w-full flex justify-center items-center"
+            className="z-20 w-full h-full flex justify-center items-center"
           >
             <RevealedMessage 
               card={currentCard} 
@@ -167,7 +168,7 @@ const App: React.FC = () => {
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="fixed bottom-4 text-center text-xs text-gray-500 font-light z-0">
+      <div className="fixed bottom-2 text-center text-[10px] md:text-xs text-gray-500 font-light z-0 pointer-events-none">
         בהשראת Vivi World • נוצר באהבה
       </div>
     </div>
