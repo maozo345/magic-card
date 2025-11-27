@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCard } from '../types';
-import { X, Share2, Heart, Volume2, VolumeX, ExternalLink, RefreshCw, ChevronRight } from 'lucide-react';
+import { X, Share2, Heart, Volume2, VolumeX, ExternalLink, RefreshCw, ChevronRight, Play } from 'lucide-react';
 
 interface RevealedMessageProps {
   card: MessageCard;
@@ -19,7 +19,9 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
   onPrevious,
   hasPrevious 
 }) => {
-  const [isMuted, setIsMuted] = useState(false);
+  // Mobile browsers REQUIRE videos to be muted to autoplay. 
+  // We start true to ensure it plays, user can unmute manually.
+  const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -27,10 +29,19 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
     if (videoRef.current) {
       videoRef.current.currentTime = 0;
       videoRef.current.load(); // Force reload for new source
+      
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          setIsMuted(true);
+        playPromise.catch((error) => {
+          console.log("Autoplay failed (likely due to sound), ensuring muted:", error);
+          // Safety net: ensure mute is active if autoplay failed
+          if (!isMuted) {
+            setIsMuted(true);
+            if(videoRef.current) {
+                videoRef.current.muted = true;
+                videoRef.current.play().catch(e => console.error("Retry play failed", e));
+            }
+          }
         });
       }
     }
@@ -42,7 +53,7 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5 }}
-      className="relative w-full max-w-[380px] h-[80vh] md:h-[700px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-gray-800 flex flex-col"
+      className="relative w-full max-w-[380px] h-[85vh] md:h-[750px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-gray-800 flex flex-col"
     >
       {/* Video Container - Full Height */}
       <div className="absolute inset-0 z-0 bg-gray-900">
@@ -54,11 +65,12 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
           loop 
           muted={isMuted}
           playsInline 
+          webkit-playsinline="true"
           className="w-full h-full object-cover"
         />
         {/* Gradients for readability */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-full h-[400px] bg-gradient-to-t from-black/95 via-black/60 to-transparent pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-full h-[450px] bg-gradient-to-t from-black/95 via-black/70 to-transparent pointer-events-none"></div>
       </div>
       
       {/* Top Controls */}
@@ -79,10 +91,10 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
       </div>
 
       {/* Content Overlay - Bottom */}
-      <div className="relative z-20 mt-auto p-4 pb-4 flex flex-col items-start text-right" dir="rtl">
+      <div className="relative z-20 mt-auto p-4 pb-6 flex flex-col items-start text-right" dir="rtl">
         
         {/* Profile Info */}
-        <div className="flex items-center gap-3 mb-2 w-full">
+        <div className="flex items-center gap-3 mb-3 w-full">
            <div className="w-10 h-10 rounded-full border border-white/50 overflow-hidden shadow-lg relative bg-gray-800">
              <img src={card.imageUrl} alt="Avatar" className="w-full h-full object-cover" />
            </div>
@@ -99,7 +111,7 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
            </div>
            
            {/* Like / Share vertical stack on the left (LTR layout relative to container but visuals right) */}
-           <div className="flex flex-col gap-4 items-center absolute left-4 bottom-48">
+           <div className="flex flex-col gap-4 items-center absolute left-4 bottom-56">
               <button className="flex flex-col items-center gap-1 group">
                 <div className="p-3 bg-gray-800/60 rounded-full text-white group-hover:bg-pink-600 transition backdrop-blur-md">
                    <Heart size={20} className="fill-transparent group-hover:fill-white" />
@@ -117,24 +129,24 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
         </div>
 
         {/* Text Content */}
-        <div className="pr-2 pl-12 w-full mb-4">
+        <div className="pr-2 pl-12 w-full mb-4 max-h-32 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
           <motion.div
              key={card.id}
              initial={{ y: 20, opacity: 0 }}
              animate={{ y: 0, opacity: 1 }}
              transition={{ delay: 0.2 }}
           >
-             <h2 className="text-lg font-bold text-white mb-2 drop-shadow-lg leading-tight">
+             <h2 className="text-xl font-bold text-white mb-2 drop-shadow-lg leading-tight">
                {card.title}
              </h2>
-             <p className="text-white/90 text-sm leading-snug whitespace-pre-wrap font-light line-clamp-4 hover:line-clamp-none transition-all cursor-pointer">
+             <p className="text-white/95 text-sm leading-relaxed whitespace-pre-wrap font-light">
               {card.content}
              </p>
           </motion.div>
         </div>
         
         {/* Navigation Buttons Row */}
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-3 w-full mb-3">
           {hasPrevious && (
             <button 
               onClick={onPrevious}
@@ -154,13 +166,17 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
           </button>
         </div>
 
+        {/* Original Video Link - Large Button */}
         <a 
-          href={card.profileUrl || "#"} 
+          href={card.videoUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="mt-3 w-full text-center text-xs text-white/50 hover:text-white transition"
+          className="w-full bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition backdrop-blur-md group"
         >
-          צפייה בסרטון המקורי בטיקטוק
+          <div className="bg-white text-black rounded-full p-1 group-hover:scale-110 transition-transform">
+            <Play size={14} fill="currentColor" />
+          </div>
+          <span>צפייה בסרטון המקורי</span>
         </a>
 
       </div>
