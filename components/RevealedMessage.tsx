@@ -168,7 +168,7 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
 
         {/* Original Video Link - Large Button */}
         <a 
-          href={card.videoUrl} 
+          href={card.originalUrl || card.videoUrl} 
           target="_blank" 
           rel="noopener noreferrer"
           className="w-full bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition backdrop-blur-md group"

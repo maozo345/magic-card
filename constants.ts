@@ -1,11 +1,28 @@
 import { MessageCard } from './types';
 
-// Helper to generate AI image URLs (Simulating Imagen generation via prompt)
-// We use a random seed to ensure unique images even for similar prompts
+// Helper to generate AI image URLs
 const getAiImage = (prompt: string, seed: number) => 
   `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?nologo=true&width=720&height=1280&model=flux&seed=${seed}`;
 
 const TIKTOK_PROFILE_URL = "https://www.tiktok.com/@welcometoviviworld";
+
+// Helper to extract TikTok Video ID from the Apify URL and create a deep link
+const extractTikTokLink = (rawUrl: string): string => {
+  try {
+    // The Apify URL format ends with: ...-VIDEO_ID.mp4
+    // We search for a hyphen, followed by digits, followed by .mp4 at the end of the string or path.
+    const match = rawUrl.match(/-(\d+)\.mp4/);
+    
+    if (match && match[1]) {
+      // Construct the web link: https://www.tiktok.com/@username/video/ID
+      return `https://www.tiktok.com/@welcometoviviworld/video/${match[1]}`;
+    }
+  } catch (e) {
+    console.error("Error extracting TikTok ID", e);
+  }
+  // Fallback to profile if ID not found
+  return TIKTOK_PROFILE_URL; 
+};
 
 // Helper to determine card type and title based on text content
 const analyzeContent = (text: string) => {
@@ -40,7 +57,6 @@ const analyzeContent = (text: string) => {
     prompt = 'mystical witch cauldron moon potion magical forest art';
   }
 
-  // Randomize titles slightly for variety if generic
   if (title === 'מסר מהיקום') {
     const titles = ['הכוונה יומית', 'מסר מההדרכה', 'זמן לשינוי', 'הקשבה פנימית', 'סימן משמיים', 'בהירות מחשבתית'];
     title = titles[Math.floor(Math.random() * titles.length)];
@@ -185,7 +201,6 @@ const rawData = [
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240705094103-7388084451030420754.mp4", text: "#תקשור #מסריםמדוייקים #מסרים #פתיחהמדוייקתבקלפים #פתיחהבקלפים " },
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240701180454-7386729956287581446.mp4", text: "#תקשור #מסריםמדוייקים #מסרים #פתיחהמדוייקתבקלפים #פתיחהבקלפים " },
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240627091724-7385109673600453895.mp4", text: "#תקשור #מסריםמדוייקים #מסרים #פתיחהמדוייקתבקלפים #פתיחהבקלפים " },
-  { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240620213237-7382701531025378577.mp4", text: "מ20-26 #תקשור #תקשור #הילינג #מסריםמדוייקים #ירחמלא #ירחמלאבגדי " },
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240616100109-7381038996077481217.mp4", text: "#מסרים #תקשור #פתיחהמדוייקתבקלפים #מסריםמדוייקים #פתיחהבקלפים " },
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240609091516-7378429573182082321.mp4", text: "#מסרים #תקשור #פתיחהמדוייקתבקלפים #מסריםמדוייקים #פתיחהבקלפים " },
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240602110226-7375859606297251089.mp4", text: "#מסרים #תקשור #הילינג #פתיחהמדוייקתבקלפים #מסריםמדוייקים #פתיחהבקלפים " },
@@ -252,16 +267,19 @@ const rawData = [
   { url: "https://api.apify.com/v2/key-value-stores/XOvdKOem5X2yfKcnx/records/video-welcometov-20240101100755-7319069470100606210.mp4", text: "אם מישהי או מישהו רוצה אני אפתח קבוצה בוואצפ למסרים ואוכל שם לשלוח כמעט בכל יום מסרים לקבוצה ( נסנכרן את האנרגיה וזה יהיה מדוייק) תכתבו אם מעניין אותכם #מסרים " },
 ];
 
+// Map raw data to MessageCard objects
 export const MESSAGES: MessageCard[] = rawData.map((item, index) => {
   const { type, title, prompt } = analyzeContent(item.text);
+  const tiktokUrl = extractTikTokLink(item.url);
   
   return {
-    id: `msg-${index}`,
-    title: title,
-    type: type,
-    content: item.text.replace(/#/g, ' '), // Clean text by removing hash symbols for better reading
+    id: index.toString(),
+    title,
+    content: item.text,
     videoUrl: item.url,
-    imageUrl: getAiImage(`${prompt} mystical magical spiritual high quality`, index),
-    profileUrl: TIKTOK_PROFILE_URL
+    imageUrl: getAiImage(prompt, index),
+    profileUrl: TIKTOK_PROFILE_URL,
+    originalUrl: tiktokUrl,
+    type,
   };
 });
