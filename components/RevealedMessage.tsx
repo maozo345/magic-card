@@ -5,7 +5,7 @@ import { MessageCard } from '../types';
 import { X, Share2, Heart, Volume2, VolumeX, ExternalLink, RefreshCw, ChevronRight, Play, Copy, Check } from 'lucide-react';
 
 const WHATSAPP_NOTIFY_URL =
-  'https://wa.me/972536260735?text=היי%20התחברתי%20למסר%20הקסום%20שלך😊%0Aאשמח%20לשמוע%20פרטים%20לשיחת%20תקשור%20איתך';
+  'https://wa.me/972536260735?text=היי%20התחברתי%20למסר%20הקסום%20שלך%0Aאשמח%20לשמוע%20פרטים%20לשיחת%20תקשור%20איתך';
 
 const APP_URL = typeof window !== 'undefined' ? window.location.href : 'https://magic-card.app';
 
