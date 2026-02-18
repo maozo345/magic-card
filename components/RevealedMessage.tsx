@@ -119,7 +119,8 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
   onPrevious,
   hasPrevious,
 }) => {
-  const [isMuted, setIsMuted] = useState(false);
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const [isMuted, setIsMuted] = useState(isMobile);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -156,7 +157,7 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
     };
   }, [card]);
 
-  // Video autoplay: muted → fade volume up
+  // Video autoplay: muted → fade volume up (desktop only)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -169,6 +170,8 @@ export const RevealedMessage: React.FC<RevealedMessageProps> = ({
 
     video.play()
       .then(() => {
+        // Mobile browsers block unmuting after autoplay — keep muted so video plays
+        if (isMobile) return;
         video.muted = false;
         setIsMuted(false);
         const TARGET = 0.7, STEPS = 20, MS = 50;
